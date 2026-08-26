@@ -8,11 +8,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flask_talisman import Talisman
+from loguru import logger
 
 if TYPE_CHECKING:
     from flask import Flask
 
     from vweb.config import Settings
+
+_LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
 def configure_security(app: Flask, s: Settings) -> None:
@@ -22,6 +25,17 @@ def configure_security(app: Flask, s: Settings) -> None:
         app: The Flask application instance.
         s: The application settings.
     """
+    if s.force_https and s.host in _LOOPBACK_HOSTS:
+        logger.warning(
+            "force_https is enabled while host is {!r} (loopback). Requests will be "
+            "redirected to https://{}:{}, which has no TLS listener here and will "
+            "hang or fail to connect. This is almost always a local-dev "
+            "misconfiguration — set VWEB_ENV=development or VWEB_FORCE_HTTPS=false.",
+            s.host,
+            s.host,
+            s.port,
+        )
+
     script_src = [
         "'self'",
         "'unsafe-eval'",

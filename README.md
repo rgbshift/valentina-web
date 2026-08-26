@@ -73,7 +73,7 @@ The most important variables:
 
 | Variable                             | Description                                                                                 |
 | ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `VWEB_ENV`                           | `development` or `production`. Production mode enforces Redis and a non-default secret key. |
+| `VWEB_ENV`                           | `development` or `production`. **Defaults to `production`**, which forces an HTTPS redirect (`VWEB_FORCE_HTTPS`) — set `VWEB_ENV=development` for local runs without a TLS-terminating proxy, or the app will look dead in the browser. Production mode enforces Redis and a non-default secret key. |
 | `VWEB_SECRET_KEY`                    | Flask session secret. Must be changed for production.                                       |
 | `VWEB_API__BASE_URL`                 | URL of the Valentina API.                                                                   |
 | `VWEB_API__API_KEY`                  | API key for the Valentina API.                                                              |

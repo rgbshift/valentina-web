@@ -181,12 +181,25 @@ def dev_setup(ctx: Context) -> None:  # noqa: ARG001
     )
 
 
+def _ensure_npm_deps(ctx: Context) -> None:
+    """Install npm dependencies if node_modules is missing.
+
+    `npx @tailwindcss/cli` only fetches the CLI package itself, not the
+    project's own package.json deps (tailwindcss, daisyui) that input.css
+    resolves against, so a fresh clone fails without this.
+    """
+    if not (PROJECT_ROOT / "node_modules").exists():
+        ctx.run(["npm", "install"], title="npm install", capture=False)
+
+
 @duty()
 def run(ctx: Context) -> None:
     """Run the Quart dev server and Tailwind CSS watcher."""
     for directory in DEV_DIRECTORIES:
         if not directory.exists():
             directory.mkdir(parents=True)
+
+    _ensure_npm_deps(ctx)
 
     ctx.run(
         ["uv", "run", str(PROJECT_ROOT / "scripts" / "dev_server.py")],
@@ -198,6 +211,8 @@ def run(ctx: Context) -> None:
 @duty()
 def css(ctx: Context) -> None:
     """Build the Tailwind CSS output (minified for production)."""
+    _ensure_npm_deps(ctx)
+
     ctx.run(
         "npx @tailwindcss/cli -i src/vweb/static/css/input.css -o src/vweb/static/css/style.css --minify",
         title="build css",
