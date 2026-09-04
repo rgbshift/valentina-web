@@ -27,13 +27,14 @@ def configure_security(app: Flask, s: Settings) -> None:
     """
     if s.force_https and s.host in _LOOPBACK_HOSTS:
         logger.warning(
-            "force_https is enabled while host is {!r} (loopback). Requests will be "
-            "redirected to https://{}:{}, which has no TLS listener here and will "
-            "hang or fail to connect. This is almost always a local-dev "
-            "misconfiguration — set VWEB_ENV=development or VWEB_FORCE_HTTPS=false.",
-            s.host,
-            s.host,
-            s.port,
+            "force_https is enabled and the app is bound to {host}. Requests that "
+            "do not arrive over HTTPS, or through a proxy that sets "
+            "X-Forwarded-Proto, are redirected to https://{host}:{port}. Without a "
+            "TLS-terminating proxy in front of the app, the browser cannot connect. "
+            "To run locally over plain HTTP, set VWEB_ENV=development or "
+            "VWEB_FORCE_HTTPS=false.",
+            host=s.host,
+            port=s.port,
         )
 
     script_src = [
