@@ -5,6 +5,7 @@ When adding new CDN sources, update the CSP dict here.
 
 from __future__ import annotations
 
+import ipaddress
 from typing import TYPE_CHECKING
 
 from flask_talisman import Talisman
@@ -15,7 +16,16 @@ if TYPE_CHECKING:
 
     from vweb.config import Settings
 
-_LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
+def _is_loopback(host: str) -> bool:
+    """Return True when a bind address is loopback, including the whole 127/8 range and ::1."""
+    if host.lower() == "localhost":
+        return True
+    try:
+        # gunicorn accepts bracketed IPv6 binds such as "[::1]"
+        return ipaddress.ip_address(host.strip("[]")).is_loopback
+    except ValueError:
+        return False
 
 
 def configure_security(app: Flask, s: Settings) -> None:
@@ -25,7 +35,7 @@ def configure_security(app: Flask, s: Settings) -> None:
         app: The Flask application instance.
         s: The application settings.
     """
-    if s.force_https and s.host in _LOOPBACK_HOSTS:
+    if s.force_https and _is_loopback(s.host):
         logger.warning(
             "force_https is enabled and the app is bound to {host}. Requests that "
             "do not arrive over HTTPS, or through a proxy that sets "

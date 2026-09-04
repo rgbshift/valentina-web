@@ -160,12 +160,25 @@ def test(ctx: Context, *cli_args: str) -> None:
     )
 
 
+def _ensure_npm_deps(ctx: Context) -> None:
+    """Install npm dependencies if node_modules is missing.
+
+    `npx @tailwindcss/cli` only fetches the CLI package itself, not the
+    project's own package.json deps (tailwindcss, daisyui) that input.css
+    resolves against, so a fresh clone fails without this.
+    """
+    if not (PROJECT_ROOT / "node_modules").exists():
+        ctx.run(["npm", "install"], title="npm install", capture=False)
+
+
 @duty(pre=[dev_clean])
-def dev_setup(ctx: Context) -> None:  # noqa: ARG001
+def dev_setup(ctx: Context) -> None:
     """Setup the development environment."""
     for directory in DEV_DIRECTORIES:
         if not directory.exists():
             directory.mkdir(parents=True)
+
+    _ensure_npm_deps(ctx)
 
     console.print(
         """
@@ -179,17 +192,6 @@ def dev_setup(ctx: Context) -> None:  # noqa: ARG001
     [green]docker compose up --build[/green]
 """
     )
-
-
-def _ensure_npm_deps(ctx: Context) -> None:
-    """Install npm dependencies if node_modules is missing.
-
-    `npx @tailwindcss/cli` only fetches the CLI package itself, not the
-    project's own package.json deps (tailwindcss, daisyui) that input.css
-    resolves against, so a fresh clone fails without this.
-    """
-    if not (PROJECT_ROOT / "node_modules").exists():
-        ctx.run(["npm", "install"], title="npm install", capture=False)
 
 
 @duty()

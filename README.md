@@ -48,7 +48,7 @@ Copy the example env file and fill in your values:
 cp .env.example .env.secret
 ```
 
-At a minimum, set `VWEB_SECRET_KEY`, the `VWEB_API__*` block, and (for production) `VWEB_REDIS__URL`. See [Configuration](#configuration) for details.
+At a minimum, set `VWEB_SECRET_KEY`, the `VWEB_API__*` block, and (for production) `VWEB_REDIS__URL`. For a local run, also set `VWEB_ENV=development`. Without it, the app defaults to production mode and redirects every request to HTTPS. See [Configuration](#configuration) for details.
 
 Start Flask and the Tailwind CSS watcher together:
 
